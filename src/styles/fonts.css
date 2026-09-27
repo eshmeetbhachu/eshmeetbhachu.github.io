@@ -1,0 +1,76 @@
+/*
+ * Font loading.
+ *
+ * Required by spec (see conversation):
+ *   - Ananias   → book/cover name        — supplied (assets/fonts/Ananias.ttf), wired below.
+ *   - Kapsalon  → all notebook headings  — NOT available: no font file in the
+ *                                          project and not on Google Fonts.
+ *   - Bernoru   → project names          — NOT available: same as above.
+ *   - Fira Code → receipt main text,
+ *                 project descriptions   — available, self-hosted below.
+ *   - DM Sans   → receipt About text     — available, self-hosted below.
+ *
+ * Kapsalon and Bernoru are commercial/foundry fonts; no license files have
+ * been supplied for them yet. Per instructions we do NOT silently substitute
+ * a look-alike — `--font-heading` / `--font-project-title` fall back to a
+ * plain system stack so nothing crashes, but the intended fonts are visibly
+ * absent until files are added.
+ *
+ * TO ADD THEM LATER:
+ *   1. Drop the licensed font file into assets/fonts/ (repo root, alongside
+ *      Ananias.ttf — NOT src/assets/fonts, which only holds the fonts this
+ *      project downloaded itself from Google Fonts).
+ *   2. Uncomment the matching @font-face block below and point `src` at it.
+ *   3. Nothing else needs to change — --font-heading / --font-project-title
+ *      already name 'Kapsalon' / 'Bernoru' first in their stacks.
+ */
+
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('../assets/fonts/DMSans-Variable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Fira Code';
+  font-style: normal;
+  font-weight: 300 700; /* same variable file — it covers 300-700 */
+  font-display: swap;
+  src: url('../assets/fonts/FiraCode-Variable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Ananias';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../../assets/fonts/Ananias.ttf') format('truetype');
+}
+
+/*
+@font-face {
+  font-family: 'Kapsalon';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../../assets/fonts/Kapsalon.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Bernoru';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../../assets/fonts/Bernoru.woff2') format('woff2');
+}
+*/
+
+:root {
+  --font-cover: 'Ananias', 'Segoe UI', system-ui, sans-serif;
+  --font-heading: 'Kapsalon', system-ui, sans-serif; /* placeholder fallback — see note above */
+  --font-project-title: 'Bernoru', system-ui, sans-serif; /* placeholder fallback — see note above */
+  --font-mono: 'Fira Code', ui-monospace, 'Courier New', monospace;
+  --font-body: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+}

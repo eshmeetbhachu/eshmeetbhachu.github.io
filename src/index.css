@@ -1,0 +1,28 @@
+@import "tailwindcss";
+@import "./styles/fonts.css";
+
+/* Colours sampled from the Canva references in /design */
+@theme static {
+  --color-charcoal: #2d313d;
+  --color-cover: #151424;
+  --color-paper: #eae6db;
+  --color-ring: #231f20;
+}
+
+:root {
+  /* Single source of truth for the click-ray effect's colour (see
+     ClickEffects.jsx / notebook.css). Change it here only. */
+  --click-effect-color: #151424;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-charcoal);
+  overflow: hidden;
+}

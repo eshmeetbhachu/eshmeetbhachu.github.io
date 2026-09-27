@@ -1,0 +1,1213 @@
+/*
+ * Notebook stage + closed → open animation.
+ * Geometry comes from src/constants/layout.js (passed in as inline styles / CSS vars).
+ */
+
+:root {
+  /* Book slides right and widens so the spine lands in the centre of the open spread. */
+  --t-expand: 1000ms;
+  --ease-expand: cubic-bezier(0.65, 0.05, 0.25, 1);
+
+  /* Cover hinge: slow lift, quick swing through vertical, soft landing. */
+  --t-hinge: 1100ms;
+  --d-hinge: 60ms;
+  --ease-hinge: cubic-bezier(0.5, 0.05, 0.2, 1);
+
+  /* Receipt gets nudged aside as the book opens. */
+  --t-receipt: 900ms;
+  --d-receipt: 40ms;
+  --ease-receipt: cubic-bezier(0.65, 0, 0.25, 1);
+
+}
+
+/* ---------- Stage ---------- */
+
+.stage-viewport {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--color-charcoal);
+}
+
+.stage {
+  position: relative;
+  transform-origin: 0 0;
+}
+
+.ref-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* ---------- Receipt placeholder ---------- */
+
+.receipt {
+  position: absolute;
+  z-index: 1;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* box-shadow, not filter: drop-shadow — the latter forces the whole
+     subtree onto a rasterized layer and corrupts subpixel-AA text colour. */
+  box-shadow: 0 10px 18px rgb(0 0 0 / 0.25);
+  transition: transform var(--t-receipt) var(--ease-receipt) var(--d-receipt);
+}
+
+.receipt[data-shifted='true'] {
+  transform: translateX(var(--receipt-shift));
+}
+
+/* ---------- Book ---------- */
+
+/*
+ * The book is laid out at its OPEN geometry. While closed, it's translated and
+ * scaled around the spine (top) so its right half exactly covers the Canva
+ * closed-cover rectangle. Opening animates that transform back to identity.
+ */
+.book {
+  position: absolute;
+  z-index: 2;
+  transform-origin: var(--half-w) 0;
+  transform: translate(var(--closed-tx), var(--closed-ty)) scale(var(--closed-sx), var(--closed-sy));
+  transition: transform var(--t-expand) var(--ease-expand);
+  perspective: 3200px;
+  perspective-origin: var(--half-w) 50%;
+}
+
+.book[data-state='opening'],
+.book[data-state='open'] {
+  transform: translate(0, 0) scale(1, 1);
+}
+
+/* The .book box is laid out at the open-book size and only scaled while
+   closed, so its (empty, transparent) box reaches over the receipt. Let clicks
+   pass through the container itself and only catch them on real surfaces. */
+.book {
+  pointer-events: none;
+}
+
+.book__base,
+.book__leaf,
+.book__leaf2,
+.page-corner {
+  pointer-events: auto;
+}
+
+.book__base,
+.book__leaf {
+  position: absolute;
+  top: 0;
+  left: var(--half-w);
+  width: var(--half-w);
+  height: 100%;
+}
+
+.book__base {
+  z-index: 1;
+}
+
+/* Cover leaf — hinged on its left edge (the spine). */
+.book__leaf {
+  /* Above base(1)/leaf2(2) so it hides everything while closed (LOCKED
+     relative order — was 2, renumbered only to make room for .book__leaf2;
+     still exactly "spiral > leaf > base" as before). */
+  z-index: 3;
+  transform-origin: 0 50%;
+  transform-style: preserve-3d;
+  transform: rotateY(0deg);
+  transition: transform var(--t-hinge) var(--ease-hinge) var(--d-hinge);
+}
+
+.book[data-state='opening'] .book__leaf {
+  will-change: transform;
+}
+
+.book[data-state='opening'] .book__leaf,
+.book[data-state='open'] .book__leaf {
+  transform: rotateY(-180deg);
+}
+
+.book__face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.book__face--front {
+  border-radius: 0 22px 22px 0 / 0 24px 24px 0;
+}
+
+.book__face--back {
+  transform: rotateY(180deg);
+  border-radius: 40px 0 0 40px;
+}
+
+/* ---------- Frame + paper halves ---------- */
+
+.book-half {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--color-cover);
+}
+
+.book-half--left {
+  border-radius: 40px 0 0 40px;
+}
+
+.book-half--right {
+  border-radius: 0 40px 40px 0;
+}
+
+.book-half__paper {
+  position: absolute;
+  top: var(--paper-top);
+  bottom: var(--paper-bottom);
+  overflow: hidden;
+  background: var(--color-paper);
+}
+
+.book-half--left .book-half__paper {
+  left: var(--paper-outer);
+  right: 0;
+  border-radius: 16px 0 0 16px;
+}
+
+.book-half--right .book-half__paper {
+  left: 0;
+  right: var(--paper-outer);
+  border-radius: 0 16px 16px 0;
+}
+
+/* ---------- Closed cover ---------- */
+
+.cover-front {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+  background: var(--color-cover);
+  /* Canva cover corners are ~24px; divided by the closed scale so they land at 24px. */
+  border-radius: 0 22px 22px 0 / 0 24px 24px 0;
+}
+
+.cover-front:disabled {
+  cursor: default;
+}
+
+.cover-front:focus-visible {
+  outline: 3px solid var(--color-paper);
+  outline-offset: 4px;
+}
+
+.cover-front__art {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  transform: scale(calc(1 / var(--closed-sx)), calc(1 / var(--closed-sy)));
+}
+
+/* Placeholder cover title — position from 01-home (x 642, y ~50). */
+.cover-title {
+  position: absolute;
+  top: 12px;
+  left: 54px;
+  margin: 0;
+  color: #e7ddc6;
+  font-family: var(--font-cover);
+  font-size: 44px;
+  line-height: 1.45;
+  letter-spacing: 0.08em;
+}
+
+/* ---------- Opening depth cues ---------- */
+
+/* Faces darken as the cover turns edge-on (two keyframes → tracks the hinge easing). */
+.book__shade {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.book[data-state='opening'] .book__face--front .book__shade {
+  animation: shade-front var(--t-hinge) var(--ease-hinge) var(--d-hinge) both;
+}
+
+.book[data-state='opening'] .book__face--back .book__shade {
+  animation: shade-back var(--t-hinge) var(--ease-hinge) var(--d-hinge) both;
+}
+
+@keyframes shade-front {
+  from { opacity: 0; }
+  to { opacity: 0.9; }
+}
+
+@keyframes shade-back {
+  from { opacity: 0.9; }
+  to { opacity: 0; }
+}
+
+/* Shadow the lifted cover casts onto the right page near the spine. */
+.book__cast-shadow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgb(0 0 0 / 0.35), rgb(0 0 0 / 0) 70%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.book[data-state='opening'] .book__cast-shadow {
+  animation: cast-shadow var(--t-hinge) ease-out var(--d-hinge) both;
+}
+
+@keyframes cast-shadow {
+  0% { opacity: 0; }
+  30% { opacity: 1; }
+  75%, 100% { opacity: 0; }
+}
+
+/* Page content settles in once the spread is mostly revealed. */
+.book__content {
+  height: 100%;
+  opacity: 0;
+  transition: opacity 350ms ease;
+}
+
+.book[data-state='opening'] .book__content {
+  transition-delay: 650ms;
+}
+
+.book[data-state='opening'] .book__content,
+.book[data-state='open'] .book__content {
+  opacity: 1;
+}
+
+/* ---------- Spiral binding ---------- */
+
+.spiral {
+  position: absolute;
+  /* Always the top-most layer, so pages appear to pass through the rings
+     (was 3; renumbered for the same reason as .book__leaf above — still
+     always above every leaf, exactly as before). */
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.spiral__ring {
+  display: block;
+  box-sizing: border-box;
+  border: 4px solid var(--color-ring);
+}
+
+.spiral__coil {
+  display: block;
+  flex: none;
+}
+
+/* Closed: chain-link rings straddling the cover's left edge. */
+.spiral--closed .spiral__ring {
+  border-width: 4.5px;
+  border-radius: 7px;
+}
+
+.spiral--closed {
+  transition: opacity 250ms ease 380ms;
+}
+
+.book[data-state='opening'] .spiral--closed,
+.book[data-state='open'] .spiral--closed {
+  opacity: 0;
+}
+
+/* Open: horizontal coil loops over the centre fold — SVG rings (see Spiral.jsx),
+   coloured via currentColor. */
+.spiral--open {
+  color: var(--color-ring);
+  opacity: 0;
+  transform: scaleY(0.97);
+  transform-origin: 50% 50%;
+  transition:
+    opacity 300ms ease 520ms,
+    transform 500ms cubic-bezier(0.3, 1.4, 0.5, 1) 520ms;
+}
+
+.book[data-state='opening'] .spiral--open,
+.book[data-state='open'] .spiral--open {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+/* ==========================================================================
+   Page turn (new; additive — does not modify anything above this line other
+   than the two z-index renumberings noted next to .book__leaf and .spiral)
+   ========================================================================== */
+
+:root {
+  --t-turn: 750ms;
+  --ease-turn: cubic-bezier(0.45, 0.05, 0.25, 1);
+}
+
+/*
+ * Page-turn leaf — same hinge (spine, x = HALF_WIDTH) as the cover leaf, one
+ * step further into the stack. Front = current right page (rest, spread 0),
+ * back = next left page (turned, spread 1). Toggled by [data-spread] on
+ * .book, so it transitions smoothly in either direction (forward/backward)
+ * with a plain CSS transition rather than a one-shot animation.
+ */
+.book__leaf2 {
+  position: absolute;
+  top: 0;
+  left: var(--half-w);
+  width: var(--half-w);
+  height: 100%;
+  z-index: 2;
+  transform-origin: 0 50%;
+  transform-style: preserve-3d;
+  transform: rotateY(0deg);
+  transition: transform var(--t-turn) var(--ease-turn);
+}
+
+/* Above the cover leaf once open, so a landed spread-1 turn covers About. */
+.book[data-state='open'] .book__leaf2 {
+  z-index: 4;
+}
+
+.book[data-spread='1'] .book__leaf2 {
+  transform: rotateY(-180deg);
+}
+
+.book__face2 {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.book__face2--front {
+  border-radius: 0 40px 40px 0;
+}
+
+.book__face2--back {
+  transform: rotateY(180deg);
+  border-radius: 40px 0 0 40px;
+}
+
+/* Same darken/lighten depth cue as the cover, but transition-driven so it
+   plays correctly for both forward and backward turns. */
+.book__shade2 {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t-turn) var(--ease-turn);
+}
+
+.book__face2--back .book__shade2 {
+  opacity: 0.9;
+}
+
+.book[data-spread='1'] .book__face2--front .book__shade2 {
+  opacity: 0.9;
+}
+
+.book[data-spread='1'] .book__face2--back .book__shade2 {
+  opacity: 0;
+}
+
+/* ---------- Corner hit targets ---------- */
+
+.page-corner {
+  position: absolute;
+  z-index: 8; /* above every leaf, below the spiral */
+  bottom: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.page-corner:disabled {
+  cursor: default;
+  pointer-events: none;
+}
+
+.page-corner--right {
+  border-radius: 0 0 40px 0; /* matches .book-half--right's outer corner */
+}
+
+.page-corner--left {
+  border-radius: 0 0 0 40px; /* matches .book-half--left's outer corner */
+}
+
+.page-corner:focus-visible {
+  outline: 2px solid var(--color-cover);
+  outline-offset: -4px;
+}
+
+.page-corner__number {
+  position: absolute;
+  /* Anchored to the paper inset (inherited from .book), not the outer frame
+     — otherwise it lands on the dark frame past the paper's edge. */
+  bottom: calc(var(--paper-bottom) + 12px);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  white-space: nowrap;
+  color: rgb(21 20 36 / 0.55);
+}
+
+.page-corner--right .page-corner__number {
+  right: calc(var(--paper-outer) + 44px);
+}
+
+.page-corner--left .page-corner__number {
+  left: calc(var(--paper-outer) + 44px);
+}
+
+/* Dog-ear: the paper's corner folded back over itself. The square is split
+   along the fold diagonal — the flap (paper underside, lit, with a crease
+   shadow at the fold) on the page side, and the dark frame showing through
+   where the corner used to be. */
+.page-corner__curl {
+  position: absolute;
+  bottom: var(--paper-bottom);
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  transition:
+    width 220ms cubic-bezier(0.3, 0.7, 0.3, 1),
+    height 220ms cubic-bezier(0.3, 0.7, 0.3, 1);
+}
+
+.page-corner--right .page-corner__curl {
+  right: var(--paper-outer);
+  border-top-left-radius: 45%;
+  background: linear-gradient(
+    135deg,
+    #fbf9f3 0%,
+    #efebe0 30%,
+    #d8d2c2 46%,
+    #bfb8a6 50%,
+    var(--color-cover) 50%
+  );
+  filter: drop-shadow(-2px 2px 2px rgb(0 0 0 / 0.22));
+}
+
+.page-corner--left .page-corner__curl {
+  left: var(--paper-outer);
+  border-top-right-radius: 45%;
+  background: linear-gradient(
+    225deg,
+    #fbf9f3 0%,
+    #efebe0 30%,
+    #d8d2c2 46%,
+    #bfb8a6 50%,
+    var(--color-cover) 50%
+  );
+  filter: drop-shadow(2px 2px 2px rgb(0 0 0 / 0.22));
+}
+
+.page-corner:hover .page-corner__curl,
+.page-corner:focus-visible .page-corner__curl {
+  width: 32px;
+  height: 32px;
+}
+
+/* ---------- Shared page heading + About body ---------- */
+
+.notebook-heading {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 38px;
+  line-height: 1;
+  letter-spacing: 0.025em;
+  color: var(--color-cover);
+}
+
+.about-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 372px;
+  margin-top: 18px;
+}
+
+.about-body p {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-cover);
+}
+
+.about-photo {
+  display: block;
+  width: 325px;
+  height: auto;
+  margin: 12px 0 0 28px; /* nudged left of centre (was auto-centred at ~53.5px each side) */
+  filter: drop-shadow(0 6px 10px rgb(0 0 0 / 0.25));
+}
+
+/* ---------- Tech Stack + Experience ----------
+   Positions are absolute, measured from /design/02-about-stack.png relative
+   to the right page's own top-left corner — normal-flow margins would drift
+   here because Kapsalon (the intended heading font) isn't available yet, so
+   the fallback font's different line-height would compound down the page. */
+
+.tech-fish {
+  position: absolute;
+  display: block;
+  top: 85px;
+  left: 72px;
+  width: 350px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+/* Hover morph. Fishes2.svg is the same drawing at 1.092x with extra doodles.
+   Both images are anchored at the centre of the clothesline (x = 165.3px on
+   the base, 185.9px on the hover art, top 0), so the base can grow into the
+   hover art's size while fading out as the hover art grows in from the base
+   size — it reads as the fish swelling up, not as a swap. */
+.tech-fish__base,
+.tech-fish__hover {
+  display: block;
+  height: auto;
+  transition:
+    transform 320ms cubic-bezier(0.34, 1.45, 0.64, 1),
+    opacity 180ms ease;
+}
+
+.tech-fish__base {
+  width: 350px;
+  transform-origin: 165.3px 0;
+}
+
+.tech-fish__hover {
+  position: absolute;
+  top: 0;
+  left: 0px;
+  width: 350px;
+  transform-origin: 185.9px 0;
+  transform: scale(0.9158);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tech-fish:hover .tech-fish__base,
+.tech-fish:focus-visible .tech-fish__base {
+  transform: scale(1.092);
+  opacity: 0;
+}
+
+.tech-fish:hover .tech-fish__hover,
+.tech-fish:focus-visible .tech-fish__hover {
+  transform: scale(1.02);
+  opacity: 1;
+}
+
+.tech-fish:focus-visible {
+  outline: 2px dashed var(--color-cover);
+  outline-offset: 6px;
+}
+
+/* ---------- Tech stack popup ---------- */
+
+.techstack-modal {
+  position: absolute;
+  inset: 0;
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  background: rgb(15 14 22 / 0.68);
+  animation: techstack-fade 200ms ease both;
+}
+
+.techstack-modal__window {
+  position: relative;
+  width: 1040px;
+  padding: 16px;
+  border-radius: 34px;
+  background: var(--color-cover);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.45);
+  animation: techstack-pop 260ms cubic-bezier(0.34, 1.35, 0.64, 1) both;
+}
+
+.techstack-modal__panel {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 20px;
+}
+
+.techstack-modal__tape {
+  position: absolute;
+  z-index: 2;
+  top: -22px;
+  left: -26px;
+  width: 120px;
+  transform: rotate(-12deg);
+  filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.3));
+  pointer-events: none;
+}
+
+.techstack-modal__close {
+  position: absolute;
+  z-index: 2;
+  top: -14px;
+  right: 26px;
+  padding: 6px 12px 7px;
+  border: 0;
+  border-radius: 3px;
+  background: var(--color-paper);
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.3);
+  transform: rotate(2deg);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-cover);
+  cursor: pointer;
+}
+
+.techstack-modal__close:hover {
+  background: #f4f1e8;
+}
+
+.techstack-modal__close:focus-visible {
+  outline: 2px solid var(--color-paper);
+  outline-offset: 3px;
+}
+
+@keyframes techstack-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes techstack-pop {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Experience — every element absolutely positioned from
+   constants/experienceLayout.js (measured from the Canva design and
+   calibrated against a 2x render). */
+.experience-heading {
+  position: absolute;
+  white-space: nowrap;
+}
+
+.experience-icon {
+  position: absolute;
+  display: block;
+  width: auto;
+}
+
+.experience-company {
+  position: absolute;
+  margin: 0;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  line-height: 1;
+  color: #000;
+}
+
+.experience-meta {
+  position: absolute;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-weight: 300;
+  line-height: 1;
+  color: #171716;
+}
+
+.experience-description {
+  position: absolute;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: #000;
+}
+
+.experience-description span {
+  display: block;
+  white-space: nowrap;
+}
+
+/* First line starts under the company name, the rest wrap back to the margin. */
+.experience-description span:first-child {
+  padding-left: var(--first-indent);
+}
+
+/* ---------- Music toggle ---------- */
+
+.music-toggle {
+  /* Viewport-fixed; size and offsets are computed in MusicToggle.jsx so it
+     always sits in the clear space beside/below the open notebook. */
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: none; /* no backdrop circle — just the icon */
+  cursor: pointer;
+  transition: transform 160ms ease;
+}
+
+.music-toggle img {
+  display: block;
+  height: auto;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.4));
+}
+
+.music-toggle:hover {
+  transform: scale(1.08);
+}
+
+.music-toggle:focus-visible {
+  outline: 2px solid var(--color-paper);
+  outline-offset: 3px;
+}
+
+/* ---------- Click ray effect ----------
+   Colour comes from --click-effect-color (defined once in index.css). */
+
+.click-effects {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.click-burst {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.click-burst__ray {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2.5px;
+  height: 11px;
+  margin-left: -1.25px;
+  border-radius: 2px;
+  background: var(--click-effect-color);
+  transform-origin: 50% 100%;
+  animation: click-ray-burst 420ms ease-out forwards;
+}
+
+@keyframes click-ray-burst {
+  from {
+    transform: rotate(var(--ray-angle)) translateY(-4px) scaleY(0.4);
+    opacity: 0.85;
+  }
+  to {
+    transform: rotate(var(--ray-angle)) translateY(calc(-1 * var(--ray-length))) scaleY(1);
+    opacity: 0;
+  }
+}
+
+/* ---------- Projects ----------
+   Every element is absolutely positioned from constants/projectsLayout.js,
+   in px relative to the page's paper — measured from the Canva design and
+   calibrated against a 2x render, so the page matches the design exactly. */
+
+.projects-page {
+  position: relative;
+  height: 100%;
+}
+
+.projects-heading {
+  position: absolute;
+  white-space: nowrap;
+}
+
+.project-circle {
+  position: absolute;
+  z-index: 3;
+  height: auto;
+}
+
+.project-bubble {
+  position: absolute;
+  z-index: 1;
+  box-sizing: border-box;
+  border: 3.8px solid;
+  background: var(--color-paper);
+}
+
+/* Full semicircular cap on the far end; the flat end is hidden under the circle. */
+.project-bubble--cap-right {
+  border-radius: 0 999px 999px 0;
+}
+
+.project-bubble--cap-left {
+  border-radius: 999px 0 0 999px;
+}
+
+.project-title {
+  position: absolute;
+  z-index: 2;
+  margin: 0;
+  white-space: nowrap;
+  font-family: var(--font-project-title);
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--color-cover);
+}
+
+.project-description {
+  position: absolute;
+  z-index: 2;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--color-cover);
+}
+
+.project-description span {
+  display: block;
+  white-space: nowrap;
+}
+
+.project-github {
+  position: absolute;
+  z-index: 4;
+  display: block;
+  line-height: 0;
+}
+
+.project-github img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0.85;
+  transition:
+    opacity 150ms ease,
+    transform 200ms ease;
+}
+
+.project-github:hover img,
+.project-github:focus-visible img {
+  opacity: 1;
+  transform: translateY(-2px) scale(1.15);
+}
+
+.project-live-link {
+  position: absolute;
+  z-index: 4;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-cover);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.project-decor {
+  position: absolute;
+  z-index: 4;
+  height: auto;
+  pointer-events: none;
+}
+
+/* ---------- Photographs ----------
+   Nine polaroids that start as a fanned stack. Clicking the top card sends
+   it behind the stack into its grid cell; after the ninth, a "tidy up" link
+   stacks them all back up. Positions come from constants/photosLayout.js. */
+
+.photo-deck {
+  position: absolute;
+  inset: 0;
+}
+
+.photo-card {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: var(--color-cover);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.45);
+  transform-origin: 50% 50%;
+  transition: transform 620ms cubic-bezier(0.3, 0.7, 0.2, 1);
+  cursor: default;
+}
+
+.photo-card[data-top='true'] {
+  cursor: pointer;
+}
+
+.photo-card:focus-visible {
+  outline: 3px solid var(--color-cover);
+  outline-offset: 3px;
+}
+
+.photo-card__img {
+  position: absolute;
+  display: block;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+}
+
+.photo-card__caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  pointer-events: none;
+}
+
+.photo-tidy {
+  position: absolute;
+  z-index: 200;
+  transform: translateX(-50%);
+  padding: 2px 4px;
+  border: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-cover);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  opacity: 0.75;
+  cursor: pointer;
+  animation: photo-tidy-in 300ms ease 450ms both;
+}
+
+.photo-tidy:hover,
+.photo-tidy:focus-visible {
+  opacity: 1;
+}
+
+@keyframes photo-tidy-in {
+  from { opacity: 0; }
+  to { opacity: 0.75; }
+}
+
+/* ---------- Cover line art ---------- */
+
+.cover-lineart {
+  position: absolute;
+  left: 111px;
+  top: 174px;
+  width: 435px;
+  height: 609px;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   Receipt content (paper background is set inline; layout below flows
+   normally inside a padded column, so it reflows cleanly instead of relying
+   on fixed pixel offsets)
+   ========================================================================== */
+
+.receipt__tape {
+  position: absolute;
+  z-index: 2;
+  top: -30px;
+  left: -40px;
+  width: 130px;
+  height: auto;
+  transform: rotate(-10deg);
+  filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.3));
+  pointer-events: none;
+}
+
+.receipt__inner {
+  position: relative;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 24px 26px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* content block is shorter than the paper; centre it instead of leaving the gap at the bottom */
+  gap: 12px;
+}
+
+.receipt__row {
+  display: flex;
+  justify-content: space-between;
+  flex: none;
+}
+
+.receipt__label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: #3a3a3a;
+  text-transform: uppercase;
+}
+
+.receipt__divider {
+  flex: none;
+  border-top: 1px dashed #9a9a94;
+}
+
+.receipt__photo {
+  flex: none;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 244 / 184; /* portrait.svg's native size — shows the full photo, no crop */
+  filter: grayscale(1) contrast(1.1);
+}
+
+.receipt__bio {
+  flex: none;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #3a3a3a;
+}
+
+.receipt__stats {
+  flex: none;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.receipt__stat-row {
+  display: flex;
+  align-items: flex-end;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #3a3a3a;
+}
+
+.receipt__stat-row dt {
+  display: flex;
+  align-items: flex-end;
+  flex: 1;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.receipt__stat-row dt::after {
+  content: '';
+  flex: 1;
+  margin: 0 4px 3px;
+  border-bottom: 1px dotted #9a9a94;
+}
+
+.receipt__stat-row dd {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.receipt__icons {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.receipt__icons a {
+  display: block;
+  line-height: 0;
+  opacity: 0.85;
+  transition:
+    opacity 150ms ease,
+    transform 200ms ease;
+}
+
+.receipt__icons a:hover,
+.receipt__icons a:focus-visible {
+  opacity: 1;
+  transform: translateY(-4px) scale(1.2);
+}
+
+.receipt__icon {
+  display: block;
+  height: 26px;
+  width: auto;
+}
+
+.receipt__barcode-link {
+  display: block;
+  flex: none;
+  line-height: 0;
+}
+
+.receipt__barcode {
+  display: block;
+  width: 100%;
+  height: auto;
+  opacity: 0.9;
+  transition: opacity 150ms ease;
+}
+
+.receipt__barcode-link:hover .receipt__barcode,
+.receipt__barcode-link:focus-visible .receipt__barcode {
+  opacity: 1;
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .book,
+  .book__leaf,
+  .book__leaf2,
+  .receipt,
+  .spiral--closed,
+  .spiral--open,
+  .book__shade2,
+  .photo-card,
+  .tech-fish__base,
+  .tech-fish__hover {
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+  }
+
+  .book[data-state='opening'] .book__content {
+    transition-delay: 0ms;
+  }
+
+  .book__shade,
+  .book__cast-shadow,
+  .techstack-modal,
+  .techstack-modal__window {
+    animation: none !important;
+  }
+
+  .click-burst__ray {
+    display: none;
+  }
+}
