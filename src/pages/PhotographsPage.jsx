@@ -2,10 +2,13 @@ import { useState } from 'react';
 import { PHOTOS } from '../constants/content';
 import { PHOTO_CARD, PHOTO_STACK, PHOTO_GRID, TIDY_UP } from '../constants/photosLayout';
 
-// Placeholder photos cut from the Canva export — swap these files for the
-// full-resolution originals (same names) and nothing else needs to change.
-const PHOTO_SRC = import.meta.glob('../assets/photos/*.png', { eager: true, import: 'default' });
-const srcFor = (key) => PHOTO_SRC[`../assets/photos/${key}.png`];
+// Originals were ~270KB-6.7MB camera PNGs; converted to WebP capped at 2000px
+// on the long edge (well beyond the ~256-313px stage-px display size at any
+// realistic zoom) — see the optimization notes in App.jsx. This page itself
+// isn't rendered until the user opens the second spread (also in App.jsx),
+// so these fetches only happen once that's actually needed.
+const PHOTO_SRC = import.meta.glob('../assets/photos/*.webp', { eager: true, import: 'default' });
+const srcFor = (key) => PHOTO_SRC[`../assets/photos/${key}.webp`];
 
 const cellCentre = (i) => ({ x: PHOTO_GRID.cols[i % 3], y: PHOTO_GRID.rows[Math.floor(i / 3)] });
 

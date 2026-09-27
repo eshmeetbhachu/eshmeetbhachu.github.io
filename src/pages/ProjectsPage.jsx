@@ -1,5 +1,5 @@
 import ProjectEntry from '../components/ProjectEntry';
-import canvassyncIcon from '../../assets/canvassync.svg';
+import canvassyncIcon from '../assets/optimized/canvassync.webp';
 import swimSafeIcon from '../../assets/swim-safe.svg';
 import assemblyIcon from '../../assets/assembly.svg';
 import crown from '../../assets/crown.svg';

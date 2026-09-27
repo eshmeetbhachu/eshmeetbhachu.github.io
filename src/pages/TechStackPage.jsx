@@ -1,15 +1,34 @@
-import fishes from '../../assets/Fishes.svg';
-import fishesHover from '../../assets/Fishes2.svg';
+import { useEffect, useState } from 'react';
+import fishes from '../assets/optimized/Fishes.webp';
 import antierIcon from '../../assets/antier-icon.png';
 import { EXPERIENCE_CONTENT } from '../constants/content';
 import { EXPERIENCE_LAYOUT as L } from '../constants/experienceLayout';
 
 export default function TechStackPage({ onOpenTechStack }) {
+  // Fishes2.webp (239KB — the same fish, drawn bigger, with extra wiggle
+  // marks, shown on hover) is dynamically imported rather than a static
+  // top-level import, so it isn't part of this page's own initial fetch
+  // burst alongside Fishes.webp. It's requested on idle right after mount
+  // instead — this page itself only mounts once the book is open (see
+  // App.jsx), so by the time a user could plausibly reach for the fish, this
+  // has already had a real head start in the background. Starting the state
+  // at the (already-loaded) base image, rather than null, means an
+  // implausibly-early hover just shows the same fish rather than nothing.
+  const [fishesHover, setFishesHover] = useState(fishes);
+  useEffect(() => {
+    const idle = window.requestIdleCallback ?? ((cb) => setTimeout(cb, 200));
+    const cancelIdle = window.cancelIdleCallback ?? clearTimeout;
+    const id = idle(() => {
+      import('../assets/optimized/Fishes2.webp').then((m) => setFishesHover(m.default));
+    });
+    return () => cancelIdle(id);
+  }, []);
+
   return (
     <div className="relative p-5 pt-6">
       <h2 className="notebook-heading text-right">MY TECH STACK</h2>
-      {/* Hover morphs to Fishes2.svg (same fish, drawn bigger, with wiggle
-          marks); click opens the full tech-stack chart. */}
+      {/* Hover morphs to the larger fish artwork; click opens the full
+          tech-stack chart. */}
       <button type="button" className="tech-fish" onClick={onOpenTechStack} aria-label="Open my tech stack">
         <img className="tech-fish__base" src={fishes} alt="" draggable="false" />
         <img className="tech-fish__hover" src={fishesHover} alt="" draggable="false" />

@@ -39,6 +39,7 @@ export default function Notebook({
   rightPage,
   nextLeftPage,
   nextRightPage,
+  nextSpreadReady,
   spread,
   isTurning,
   onTurnForward,
@@ -103,7 +104,7 @@ export default function Notebook({
             side="right"
             number={spread === 0 ? 2 : 4}
             onClick={onTurnForward}
-            disabled={isTurning || spread === 1}
+            disabled={isTurning || spread === 1 || !nextSpreadReady}
           />
           <PageCorner
             side="left"

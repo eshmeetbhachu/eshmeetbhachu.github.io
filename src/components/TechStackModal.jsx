@@ -1,10 +1,11 @@
 import { useEffect, useRef } from 'react';
-import techstackPanel from '../assets/techstack-panel.svg';
+import techstackPanel from '../assets/optimized/techstack-panel.webp';
 import tape from '../../assets/tape.png';
 
-// The full tech-stack chart (/assets/Techstack.svg, viewBox-cropped to its
-// artwork in src/assets/techstack-panel.svg), shown over the notebook.
-// Closes on the close tag, a click outside the panel, or Escape.
+// The full tech-stack chart (/assets/Techstack.svg — that source file is a
+// 5.6MB base64-embedded raster inside heavy filter/mask wrappers, so it's
+// rendered to a flat WebP once instead of shipped as-is), shown over the
+// notebook. Closes on the close tag, a click outside the panel, or Escape.
 export default function TechStackModal({ open, onClose }) {
   const closeRef = useRef(null);
 

@@ -1,6 +1,6 @@
 import { ABOUT_CONTENT } from '../constants/content';
 import formatParagraph from '../utils/formatParagraph';
-import meme from '../../assets/meme1.svg';
+import meme from '../assets/optimized/meme1.webp';
 
 // Per-paragraph formatting (bold/underline/keep-on-one-line) — wording itself
 // lives only in content.js; this just marks which words to style.

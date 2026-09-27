@@ -3,8 +3,8 @@
 // raw file with background-size:cover fit the wrong box and left the paper
 // undersized inside the receipt. This copy only narrows the viewBox to the
 // paper, so the vector content is untouched.
-import receiptPaper from '../assets/receipt-paper.svg';
-import portrait from '../../assets/portrait.svg';
+import receiptPaper from '../assets/receipt-paper.webp';
+import portrait from '../assets/optimized/portrait.webp';
 import tape from '../../assets/tape.png';
 import linkedinIcon from '../../assets/linkedin.png';
 import pinterestIcon from '../../assets/pinterest.png';
