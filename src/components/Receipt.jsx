@@ -7,7 +7,6 @@ import receiptPaper from '../assets/receipt-paper.webp';
 import portrait from '../assets/optimized/portrait.webp';
 import tape from '../../assets/tape.png';
 import linkedinIcon from '../../assets/linkedin.png';
-import pinterestIcon from '../../assets/pinterest.png';
 import githubIcon from '../../assets/github.png';
 import gmailIcon from '../../assets/gmail.png';
 import barcode from '../../assets/barcode.png';
@@ -15,7 +14,7 @@ import { RECEIPT } from '../constants/layout';
 import { RECEIPT_CONTENT, SOCIAL_LINKS, RESUME_URL } from '../constants/content';
 import formatDate from '../utils/formatDate';
 
-const ICONS = { linkedin: linkedinIcon, pinterest: pinterestIcon, github: githubIcon, gmail: gmailIcon };
+const ICONS = { linkedin: linkedinIcon, github: githubIcon, gmail: gmailIcon };
 
 function Divider() {
   return <div className="receipt__divider" />;

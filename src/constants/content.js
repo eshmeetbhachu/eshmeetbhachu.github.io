@@ -17,7 +17,6 @@ export const RECEIPT_CONTENT = {
 
 export const SOCIAL_LINKS = [
   { key: 'linkedin', label: 'LinkedIn', href: 'https://www.linkedin.com/in/eshmeet-singh-bhachu/' },
-  { key: 'pinterest', label: 'Pinterest', href: 'https://in.pinterest.com/eshmeetbhachu/' },
   { key: 'github', label: 'GitHub', href: 'https://github.com/eshmeetbhachu' },
   { key: 'gmail', label: 'Email', href: 'mailto:eshmeetsingh2005@gmail.com' },
 ];
