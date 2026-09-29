@@ -40,6 +40,18 @@ export const SPIRAL_OPEN = { x: 476, y: 33, count: 37, pitch: 18, ringWidth: 42,
 
 // Safety net in case transitionend never fires (e.g. tab hidden mid-animation).
 export const OPEN_FALLBACK_MS = 1600;
+export const CLOSE_FALLBACK_MS = 1600;
+
+// Paper clip (close control), book-local, at the SVG's native 130×142 —
+// measured from the open-spread reference; overhangs the book's right edge.
+// `hit` is the solid clip inside the image's transparent margin.
+export const PAPER_CLIP = {
+  left: 940,
+  top: 87,
+  width: 130,
+  height: 142,
+  hit: { left: 20, top: 10, width: 86, height: 111 },
+};
 
 // --- Page turn (new; does not affect any of the constants above) ---
 

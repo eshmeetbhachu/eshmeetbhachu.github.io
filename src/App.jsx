@@ -15,8 +15,19 @@ import { IDENTITY } from './constants/content';
 import lineArt from './assets/optimized/lineArt.webp';
 
 export default function App() {
-  const { bookState, open, finishOpening, spread, isTurning, turnForward, turnBackward, finishTurning } =
-    useBookState();
+  const {
+    bookState,
+    open,
+    finishOpening,
+    close,
+    finishClosing,
+    closeRequested,
+    spread,
+    isTurning,
+    turnForward,
+    turnBackward,
+    finishTurning,
+  } = useBookState();
   const [techOpen, setTechOpen] = useState(false);
   const closeTech = useCallback(() => setTechOpen(false), []);
 
@@ -57,11 +68,14 @@ export default function App() {
       <ClickEffects />
       <MusicToggle />
       <Stage>
-        <Receipt shifted={bookState !== 'closed'} />
+        <Receipt shifted={bookState === 'opening' || bookState === 'open'} closing={bookState === 'closing'} />
         <Notebook
           state={bookState}
           onOpen={open}
           onOpened={finishOpening}
+          onClose={close}
+          onClosed={finishClosing}
+          closeRequested={closeRequested}
           cover={
             <>
               <p className="cover-title">

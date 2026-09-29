@@ -1179,6 +1179,103 @@
   opacity: 1;
 }
 
+/* ==========================================================================
+   Close (open → closing → closed). The target values are the closed-state
+   defaults above; these rules only replay the opening timeline backwards.
+   Opening runs 0–1160ms, so a step at [start, end] there runs at
+   [1160 − end, 1160 − start] here, and each cubic-bezier(a, b, c, d) becomes
+   cubic-bezier(1 − c, 1 − d, 1 − a, 1 − b), its exact time-reverse.
+   ========================================================================== */
+
+.book[data-state='closing'] {
+  transition: transform var(--t-expand) cubic-bezier(0.75, 0, 0.35, 0.95) 160ms;
+}
+
+.book[data-state='closing'] .book__leaf {
+  will-change: transform;
+  transition: transform var(--t-hinge) cubic-bezier(0.8, 0, 0.5, 0.95) 0ms;
+}
+
+.receipt[data-closing='true'] {
+  transition: transform var(--t-receipt) cubic-bezier(0.75, 0, 0.35, 1) 220ms;
+}
+
+.book[data-state='closing'] .book__face--front .book__shade {
+  animation: shade-front var(--t-hinge) var(--ease-hinge) 0ms reverse both;
+}
+
+.book[data-state='closing'] .book__face--back .book__shade {
+  animation: shade-back var(--t-hinge) var(--ease-hinge) 0ms reverse both;
+}
+
+.book[data-state='closing'] .book__cast-shadow {
+  animation: cast-shadow var(--t-hinge) ease-out 0ms reverse both;
+}
+
+.book[data-state='closing'] .book__content {
+  transition: opacity 350ms cubic-bezier(0.75, 0, 0.75, 0.9) 160ms;
+}
+
+.book[data-state='closing'] .spiral--closed {
+  transition: opacity 250ms cubic-bezier(0.75, 0, 0.75, 0.9) 530ms;
+}
+
+.book[data-state='closing'] .spiral--open {
+  transition:
+    opacity 300ms cubic-bezier(0.75, 0, 0.75, 0.9) 340ms,
+    transform 500ms cubic-bezier(0.5, 0, 0.7, -0.4) 140ms;
+}
+
+/* ---------- Paper clip (close control) ---------- */
+
+.paper-clip {
+  position: absolute;
+  z-index: 9; /* above every leaf and the page corners, below the spiral */
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform-origin: 30% 50%;
+  /* Leaves quickly, before the closing cover sweeps across the right page. */
+  transition:
+    opacity 150ms ease,
+    visibility 0s linear 150ms,
+    transform 200ms ease;
+}
+
+.book[data-state='open'] .paper-clip {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    opacity 250ms ease,
+    transform 200ms ease;
+}
+
+.paper-clip__img {
+  position: absolute;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+.book[data-state='open'] .paper-clip:not(:disabled):hover {
+  transform: translateY(-1px) rotate(-2deg);
+}
+
+.paper-clip:disabled {
+  cursor: default;
+}
+
+.paper-clip:focus-visible {
+  outline: 2px solid var(--color-paper);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
 /* ---------- Reduced motion ---------- */
 
 @media (prefers-reduced-motion: reduce) {
@@ -1190,6 +1287,7 @@
   .spiral--open,
   .book__shade2,
   .photo-card,
+  .paper-clip,
   .tech-fish__base,
   .tech-fish__hover {
     transition-duration: 1ms !important;

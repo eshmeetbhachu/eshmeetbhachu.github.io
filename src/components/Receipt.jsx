@@ -21,11 +21,12 @@ function Divider() {
   return <div className="receipt__divider" />;
 }
 
-export default function Receipt({ shifted }) {
+export default function Receipt({ shifted, closing }) {
   return (
     <div
       className="receipt"
       data-shifted={shifted}
+      data-closing={closing}
       style={{
         left: RECEIPT.x,
         top: RECEIPT.y,

@@ -2,6 +2,7 @@ import { BOOK_OPEN, CLOSED_TRANSFORM, HALF_WIDTH, PAPER_INSET, SPIRAL_CLOSED, SP
 import BookHalf from './BookHalf';
 import CoverFront from './CoverFront';
 import PageCorner from './PageCorner';
+import PaperClip from './PaperClip';
 import Spiral from './Spiral';
 
 const geometry = {
@@ -34,6 +35,9 @@ export default function Notebook({
   state,
   onOpen,
   onOpened,
+  onClose,
+  onClosed,
+  closeRequested,
   cover,
   leftPage,
   rightPage,
@@ -50,6 +54,11 @@ export default function Notebook({
     if (e.target === e.currentTarget && e.propertyName === 'transform' && state === 'opening') onOpened();
   };
 
+  // The book's own expand/collapse is the last transition to finish when closing.
+  const handleBookTransitionEnd = (e) => {
+    if (e.target === e.currentTarget && e.propertyName === 'transform' && state === 'closing') onClosed();
+  };
+
   const handleLeaf2TransitionEnd = (e) => {
     if (e.target === e.currentTarget && e.propertyName === 'transform') onTurnEnd();
   };
@@ -57,7 +66,13 @@ export default function Notebook({
   const open = state === 'open';
 
   return (
-    <div className="book" data-state={state} data-spread={spread} style={geometry}>
+    <div
+      className="book"
+      data-state={state}
+      data-spread={spread}
+      style={geometry}
+      onTransitionEnd={handleBookTransitionEnd}
+    >
       <div className="book__base">
         <BookHalf side="right">
           <div className="book__content">{nextRightPage}</div>
@@ -104,16 +119,18 @@ export default function Notebook({
             side="right"
             number={spread === 0 ? 2 : 4}
             onClick={onTurnForward}
-            disabled={isTurning || spread === 1 || !nextSpreadReady}
+            disabled={isTurning || closeRequested || spread === 1 || !nextSpreadReady}
           />
           <PageCorner
             side="left"
             number={spread === 0 ? 1 : 3}
             onClick={onTurnBackward}
-            disabled={isTurning || spread === 0}
+            disabled={isTurning || closeRequested || spread === 0}
           />
         </>
       )}
+
+      <PaperClip onClick={onClose} disabled={!open || isTurning || closeRequested} />
     </div>
   );
 }
