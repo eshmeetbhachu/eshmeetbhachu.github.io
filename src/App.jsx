@@ -10,6 +10,7 @@ import AboutPage from './pages/AboutPage';
 import TechStackPage from './pages/TechStackPage';
 import ProjectsPage from './pages/ProjectsPage';
 import PhotographsPage from './pages/PhotographsPage';
+import ContactPage from './pages/ContactPage';
 import useBookState from './hooks/useBookState';
 import { IDENTITY } from './constants/content';
 import lineArt from './assets/optimized/lineArt.webp';
@@ -99,8 +100,11 @@ export default function App() {
               right: spread1Ready ? <ProjectsPage side="right" /> : null,
               ready: spread1Ready,
             },
-            // Right page intentionally blank for now.
-            { left: spread1Ready ? <PhotographsPage /> : null, right: null, ready: spread1Ready },
+            {
+              left: spread1Ready ? <PhotographsPage /> : null,
+              right: spread1Ready ? <ContactPage /> : null,
+              ready: spread1Ready,
+            },
           ]}
           spread={spread}
           turningLeaf={turningLeaf}

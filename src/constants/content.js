@@ -201,3 +201,15 @@ export const TECH_STACK = [
     ],
   },
 ];
+
+export const CONTACT_CONTENT = {
+  heading: 'SAY HI!',
+  intro: 'Got an idea, an opportunity, or just want to talk about food? My inbox is always open.',
+  email: 'eshmeetsingh2005@gmail.com',
+  links: [
+    { key: 'linkedin', label: 'LINKEDIN', handle: 'eshmeet-singh-bhachu' },
+    { key: 'github', label: 'GITHUB', handle: 'eshmeetbhachu' },
+    { key: 'resume', label: 'RESUME', handle: 'view pdf' },
+  ],
+  signoff: 'thanks for flipping through!',
+};
