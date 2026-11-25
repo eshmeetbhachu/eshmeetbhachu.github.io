@@ -8,7 +8,7 @@ import kidneyIcon from '../../assets/placeholder-kidney.svg';
 import crown from '../../assets/crown.svg';
 import cat from '../../assets/cat.svg';
 import { PROJECTS_CONTENT } from '../constants/content';
-import { PROJECTS_HEADING, PROJECT_LAYOUT, PROJECT_PAGES, PROJECT_DECOR } from '../constants/projectsLayout';
+import { PROJECTS_HEADING, PROJECT_LAYOUT, PROJECT_PAGES, PROJECT_PAGE_OFFSET, PROJECT_DECOR } from '../constants/projectsLayout';
 
 const ICONS = {
   canvassync: canvassyncIcon,
@@ -25,6 +25,7 @@ const DECOR_SRC = { crown, cat };
 export default function ProjectsPage({ side = 'left' }) {
   const keys = PROJECT_PAGES[side];
   const projects = keys.map((key) => PROJECTS_CONTENT.find((p) => p.key === key));
+  const offset = PROJECT_PAGE_OFFSET[side];
 
   return (
     <div className="projects-page">
@@ -33,19 +34,21 @@ export default function ProjectsPage({ side = 'left' }) {
           PROJECTS
         </h2>
       )}
-      {projects.map(({ key, ...p }) => (
-        <ProjectEntry key={key} icon={ICONS[key]} {...p} layout={PROJECT_LAYOUT[key]} />
-      ))}
-      {Object.entries(PROJECT_DECOR[side]).map(([name, d]) => (
-        <img
-          key={name}
-          className="project-decor"
-          src={DECOR_SRC[name]}
-          alt=""
-          aria-hidden="true"
-          style={{ left: d.left, top: d.top, width: d.width }}
-        />
-      ))}
+      <div className="projects-page__entries" style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}>
+        {projects.map(({ key, ...p }) => (
+          <ProjectEntry key={key} icon={ICONS[key]} {...p} layout={PROJECT_LAYOUT[key]} />
+        ))}
+        {Object.entries(PROJECT_DECOR[side]).map(([name, d]) => (
+          <img
+            key={name}
+            className="project-decor"
+            src={DECOR_SRC[name]}
+            alt=""
+            aria-hidden="true"
+            style={{ left: d.left, top: d.top, width: d.width }}
+          />
+        ))}
+      </div>
     </div>
   );
 }

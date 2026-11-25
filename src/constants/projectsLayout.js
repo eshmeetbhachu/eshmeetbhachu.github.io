@@ -61,6 +61,13 @@ export const PROJECT_PAGES = {
   right: ['swim-safe', 'kidney', 'assembly'],
 };
 
+// Per-page nudge applied to every entry + doodle (not the heading). The right
+// page shifts right so its circles clear the spiral coil (~21px into the page).
+export const PROJECT_PAGE_OFFSET = {
+  left: { x: 0, y: -14 },
+  right: { x: 16, y: -14 },
+};
+
 export const PROJECT_DECOR = {
   left: { crown: { left: 379, top: 74.5, width: 42 } },
   right: { cat: { left: 31.3, top: 447.5, width: 68.7 } },

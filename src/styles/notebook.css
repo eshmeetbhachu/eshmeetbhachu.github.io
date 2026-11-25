@@ -841,6 +841,11 @@
   height: 100%;
 }
 
+.projects-page__entries {
+  position: absolute;
+  inset: 0;
+}
+
 .projects-heading {
   position: absolute;
   white-space: nowrap;
