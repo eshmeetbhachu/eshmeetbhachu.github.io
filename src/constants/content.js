@@ -154,3 +154,50 @@ export const PHOTOS = [
   { key: 'photo-8', title: 'Moon.' },
   { key: 'photo-9', title: 'Mumbai.' },
 ];
+
+// Tech stack slips (TechStackModal). `icon` is the file name in assets/tech/.
+export const TECH_STACK = [
+  {
+    heading: 'LANGUAGES',
+    items: [
+      { name: 'C++', icon: 'cplusplus' },
+      { name: 'JavaScript', icon: 'javascript' },
+      { name: 'TypeScript', icon: 'typescript' },
+      { name: 'SQL', icon: 'sql' },
+      { name: 'Java', icon: 'java' },
+    ],
+  },
+  {
+    heading: 'FRAMEWORKS & LIBRARIES',
+    items: [
+      { name: 'React.js', icon: 'react' },
+      { name: 'Node.js', icon: 'nodejs' },
+      { name: 'Express.js', icon: 'express' },
+      { name: 'Fastify', icon: 'fastify' },
+      { name: 'Socket.IO', icon: 'socketio' },
+      { name: 'Mongoose', icon: 'mongoose' },
+      { name: 'Tailwind CSS', icon: 'tailwindcss' },
+    ],
+  },
+  {
+    heading: 'DATABASES & SYSTEMS',
+    items: [
+      { name: 'PostgreSQL', icon: 'postgresql' },
+      { name: 'PostGIS', icon: 'postgis' },
+      { name: 'MongoDB', icon: 'mongodb' },
+      { name: 'Redis', icon: 'redis' },
+      { name: 'BullMQ', icon: 'bullmq' },
+    ],
+  },
+  {
+    heading: 'DEVELOPER TOOLS & DEPLOYMENT',
+    items: [
+      { name: 'Git', icon: 'git' },
+      { name: 'GitHub', icon: 'github' },
+      { name: 'Docker', icon: 'docker' },
+      { name: 'Postman', icon: 'postman' },
+      { name: 'Vercel', icon: 'vercel' },
+      { name: 'Render', icon: 'render' },
+    ],
+  },
+];

@@ -638,43 +638,134 @@
   z-index: 500;
   display: grid;
   place-items: center;
-  background: rgb(15 14 22 / 0.68);
+  background: rgb(15 14 22 / 0.88);
   animation: techstack-fade 200ms ease both;
 }
 
-.techstack-modal__window {
+/* Four order slips taped up in a row. Each sways in from above, staggered. */
+.techstack-modal__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 26px;
+  margin-top: -20px;
+}
+
+.slip {
   position: relative;
-  width: 1040px;
-  padding: 16px;
-  border-radius: 34px;
-  background: var(--color-cover);
-  box-shadow: 0 24px 60px rgb(0 0 0 / 0.45);
-  animation: techstack-pop 260ms cubic-bezier(0.34, 1.35, 0.64, 1) both;
+  width: 248px;
+  transform-origin: 50% 0;
+  transform: translateY(var(--drop)) rotate(var(--tilt));
+  filter: drop-shadow(0 10px 14px rgb(0 0 0 / 0.4));
+  animation: slip-in 420ms cubic-bezier(0.3, 1.35, 0.55, 1) var(--delay) both;
 }
 
-.techstack-modal__panel {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 20px;
+/* Paper with tear-off punch holes along the top, cut out with a mask. */
+.slip__paper {
+  position: relative;
+  min-height: 330px;
+  padding: 44px 18px 46px;
+  box-sizing: border-box;
+  background: var(--color-paper);
+  color: var(--color-cover);
+  --holes: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='248' height='40' viewBox='0 0 248 40'%3E%3Cpath fill-rule='evenodd' d='M0 0H248V40H0ZM17.0 0L17.0 13.4A7.5 7.5 0 1 0 27.0 13.4L27.0 0ZM42.5 0L42.5 13.4A7.5 7.5 0 1 0 52.5 13.4L52.5 0ZM68.0 0L68.0 13.4A7.5 7.5 0 1 0 78.0 13.4L78.0 0ZM93.5 0L93.5 13.4A7.5 7.5 0 1 0 103.5 13.4L103.5 0ZM119.0 0L119.0 13.4A7.5 7.5 0 1 0 129.0 13.4L129.0 0ZM144.5 0L144.5 13.4A7.5 7.5 0 1 0 154.5 13.4L154.5 0ZM170.0 0L170.0 13.4A7.5 7.5 0 1 0 180.0 13.4L180.0 0ZM195.5 0L195.5 13.4A7.5 7.5 0 1 0 205.5 13.4L205.5 0ZM221.0 0L221.0 13.4A7.5 7.5 0 1 0 231.0 13.4L231.0 0Z'/%3E%3C/svg%3E");
+  -webkit-mask: var(--holes) top / 100% 40px no-repeat, linear-gradient(#000 0 0) bottom / 100% calc(100% - 40px) no-repeat;
+  mask: var(--holes) top / 100% 40px no-repeat, linear-gradient(#000 0 0) bottom / 100% calc(100% - 40px) no-repeat;
 }
 
-.techstack-modal__tape {
+.slip__tape {
   position: absolute;
   z-index: 2;
-  top: -22px;
-  left: -26px;
-  width: 120px;
-  transform: rotate(-12deg);
-  filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.3));
+  top: -16px;
+  left: 50%;
+  width: 92px;
+  pointer-events: none;
+}
+
+.slip__heading {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 23px;
+  line-height: 1.02;
+  letter-spacing: 0.02em;
+}
+
+.slip__meta {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0 16px;
+  padding-bottom: 6px;
+  border-bottom: 1.5px dashed rgb(26 25 40 / 0.45);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  opacity: 0.75;
+}
+
+.slip__items {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slip__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.slip__item img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.slip__item span {
+  font-family: var(--font-project-title);
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1.1;
+}
+
+.slip-doodle {
+  position: absolute;
+  height: auto;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.slip-doodle--ring {
+  color: #8a5a32;
+  opacity: 0.22;
+}
+
+.slip-stamp {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  padding: 3px 7px;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  transform: rotate(-10deg);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #b23a2e;
+  opacity: 0.75;
   pointer-events: none;
 }
 
 .techstack-modal__close {
   position: absolute;
   z-index: 2;
-  top: -14px;
-  right: 26px;
+  top: 34px;
+  right: 56px;
   padding: 6px 12px 7px;
   border: 0;
   border-radius: 3px;
@@ -702,9 +793,9 @@
   to { opacity: 1; }
 }
 
-@keyframes techstack-pop {
-  from { opacity: 0; transform: translateY(14px) scale(0.96); }
-  to { opacity: 1; transform: none; }
+@keyframes slip-in {
+  from { opacity: 0; transform: translateY(calc(var(--drop) - 36px)) rotate(calc(var(--tilt) * -2)); }
+  to { opacity: 1; transform: translateY(var(--drop)) rotate(var(--tilt)); }
 }
 
 /* Experience — every element absolutely positioned from
@@ -1302,7 +1393,7 @@
   .book__shade,
   .book__cast-shadow,
   .techstack-modal,
-  .techstack-modal__window {
+  .slip {
     animation: none !important;
   }
 
