@@ -364,11 +364,12 @@
 }
 
 /*
- * Page-turn leaf — same hinge (spine, x = HALF_WIDTH) as the cover leaf, one
- * step further into the stack. Front = current right page (rest, spread 0),
- * back = next left page (turned, spread 1). Toggled by [data-spread] on
- * .book, so it transitions smoothly in either direction (forward/backward)
- * with a plain CSS transition rather than a one-shot animation.
+ * Page-turn leaves — same hinge (spine, x = HALF_WIDTH) as the cover leaf,
+ * further into the stack. Front = a spread's right page, back = the next
+ * spread's left page. Toggled by [data-turned] on each leaf, so it transitions
+ * smoothly in either direction (forward/backward) with a plain CSS transition
+ * rather than a one-shot animation. Once open, Notebook.jsx sets each leaf's
+ * z-index inline (4-7) so the moving sheet and the stacks stay ordered.
  */
 .book__leaf2 {
   position: absolute;
@@ -383,12 +384,7 @@
   transition: transform var(--t-turn) var(--ease-turn);
 }
 
-/* Above the cover leaf once open, so a landed spread-1 turn covers About. */
-.book[data-state='open'] .book__leaf2 {
-  z-index: 4;
-}
-
-.book[data-spread='1'] .book__leaf2 {
+.book__leaf2[data-turned='true'] {
   transform: rotateY(-180deg);
 }
 
@@ -424,11 +420,11 @@
   opacity: 0.9;
 }
 
-.book[data-spread='1'] .book__face2--front .book__shade2 {
+.book__leaf2[data-turned='true'] .book__face2--front .book__shade2 {
   opacity: 0.9;
 }
 
-.book[data-spread='1'] .book__face2--back .book__shade2 {
+.book__leaf2[data-turned='true'] .book__face2--back .book__shade2 {
   opacity: 0;
 }
 

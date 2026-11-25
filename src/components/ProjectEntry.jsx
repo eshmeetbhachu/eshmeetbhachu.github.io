@@ -28,11 +28,11 @@ export default function ProjectEntry({ icon, title, lines, border, githubUrl, li
       />
       <h3
         className="project-title"
-        style={
-          t.anchor === 'right'
-            ? { right: `calc(100% - ${t.right}px)`, top: px(t.top) }
-            : { left: px(t.left), top: px(t.top) }
-        }
+        style={{
+          ...(t.anchor === 'right' ? { right: `calc(100% - ${t.right}px)` } : { left: px(t.left) }),
+          top: px(t.top),
+          fontSize: px(t.fontSize),
+        }}
       >
         {title}
       </h3>

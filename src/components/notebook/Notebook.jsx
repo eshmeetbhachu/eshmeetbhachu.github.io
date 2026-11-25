@@ -23,13 +23,14 @@ const geometry = {
 /*
  * Layers, bottom → top at rest (see notebook.css for the closed/open z-index
  * override that keeps the cover on top while closed and swaps it once open):
- *   base   – Photographs (bottom-most; only ever revealed, never covers anything)
- *   leaf2  – page-turn leaf: front = TechStack (rest, spread 0), back = Projects (spread 1)
+ *   base   – last spread's right page (bottom-most; only ever revealed)
+ *   leaf k – page-turn leaves, k = 1..N-1: front = spread k-1's right page,
+ *            back = spread k's left page; turned once spread >= k
  *   leaf   – cover leaf (LOCKED): front = closed cover, back = About (permanent once open)
  *   spiral – closed rings / open coil, always on top
  *
- * leaf/base/spiral and the closed→open transition are unchanged from the
- * approved prototype. leaf2 + the corner hit targets are additive.
+ * `spreads` is [{ left, right, ready }, ...]; `ready` gates the forward corner
+ * until that spread's content has mounted.
  */
 export default function Notebook({
   state,
@@ -39,13 +40,9 @@ export default function Notebook({
   onClosed,
   closeRequested,
   cover,
-  leftPage,
-  rightPage,
-  nextLeftPage,
-  nextRightPage,
-  nextSpreadReady,
+  spreads,
   spread,
-  isTurning,
+  turningLeaf,
   onTurnForward,
   onTurnBackward,
   onTurnEnd,
@@ -64,6 +61,14 @@ export default function Notebook({
   };
 
   const open = state === 'open';
+  const isTurning = turningLeaf !== null;
+  const last = spreads.length - 1;
+  const leaves = Array.from({ length: last }, (_, i) => last - i);
+
+  // Once open (above the cover leaf, 3; below the corners, 8): the sheet in
+  // motion is on top; at rest, turned sheets stack newest-on-top on the left
+  // and unturned ones lowest-index-on-top on the right.
+  const leafZ = (k) => (k === turningLeaf ? 7 : spread >= k ? 4 + k : 4 + spreads.length - k);
 
   return (
     <div
@@ -75,25 +80,34 @@ export default function Notebook({
     >
       <div className="book__base">
         <BookHalf side="right">
-          <div className="book__content">{nextRightPage}</div>
+          <div className="book__content">{spreads[last].right}</div>
           <div className="book__cast-shadow" />
         </BookHalf>
       </div>
 
-      <div className="book__leaf2" data-turning={isTurning} onTransitionEnd={handleLeaf2TransitionEnd}>
-        <div className="book__face2 book__face2--front">
-          <BookHalf side="right">
-            <div className="book__content">{rightPage}</div>
-          </BookHalf>
-          <div className="book__shade2" />
+      {/* Reverse DOM order so, while closed (shared CSS z-index), leaf 1 sits on top. */}
+      {leaves.map((k) => (
+        <div
+          key={k}
+          className="book__leaf2"
+          data-turned={spread >= k}
+          style={open ? { zIndex: leafZ(k) } : undefined}
+          onTransitionEnd={handleLeaf2TransitionEnd}
+        >
+          <div className="book__face2 book__face2--front">
+            <BookHalf side="right">
+              <div className="book__content">{spreads[k - 1].right}</div>
+            </BookHalf>
+            <div className="book__shade2" />
+          </div>
+          <div className="book__face2 book__face2--back">
+            <BookHalf side="left">
+              <div className="book__content">{spreads[k].left}</div>
+            </BookHalf>
+            <div className="book__shade2" />
+          </div>
         </div>
-        <div className="book__face2 book__face2--back">
-          <BookHalf side="left">
-            <div className="book__content">{nextLeftPage}</div>
-          </BookHalf>
-          <div className="book__shade2" />
-        </div>
-      </div>
+      ))}
 
       <div className="book__leaf" onTransitionEnd={handleLeafTransitionEnd}>
         <div className="book__face book__face--front">
@@ -104,7 +118,7 @@ export default function Notebook({
         </div>
         <div className="book__face book__face--back">
           <BookHalf side="left">
-            <div className="book__content">{leftPage}</div>
+            <div className="book__content">{spreads[0].left}</div>
           </BookHalf>
           <div className="book__shade" />
         </div>
@@ -117,13 +131,13 @@ export default function Notebook({
         <>
           <PageCorner
             side="right"
-            number={spread === 0 ? 2 : 4}
+            number={spread * 2 + 2}
             onClick={onTurnForward}
-            disabled={isTurning || closeRequested || spread === 1 || !nextSpreadReady}
+            disabled={isTurning || closeRequested || spread === last || !spreads[spread + 1].ready}
           />
           <PageCorner
             side="left"
-            number={spread === 0 ? 1 : 3}
+            number={spread * 2 + 1}
             onClick={onTurnBackward}
             disabled={isTurning || closeRequested || spread === 0}
           />

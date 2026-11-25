@@ -59,6 +59,35 @@ export const PROJECTS_CONTENT = [
     liveUrl: 'https://canvas-sync-ruddy.vercel.app/',
   },
   {
+    key: 'perspective',
+    title: 'PERSPECTIVE',
+    border: '#5b3f78',
+    lines: [
+      'A debate-driven opinion',
+      'platform where every question',
+      'splits into For, Neutral and',
+      'Against, with a challenge',
+      'system and helpfulness',
+      'rankings across sides.',
+    ],
+    githubUrl: 'https://github.com/eshmeetbhachu/perspective',
+    liveUrl: 'https://perspective-lilac.vercel.app/',
+  },
+  {
+    key: 'wildlife',
+    title: 'WILDLIFE SIGHTING MAP',
+    border: '#3e6b3f',
+    lines: [
+      'A community-powered map for',
+      'logging and exploring animal',
+      'sightings, with smart species',
+      'suggestions and a live feed',
+      'of wildlife around you.',
+    ],
+    githubUrl: 'https://github.com/eshmeetbhachu/wildlife-sighting',
+    liveUrl: 'https://wildlife-sighting.vercel.app/',
+  },
+  {
     key: 'swim-safe',
     title: 'SWIM-SAFE',
     border: '#3b496a',
@@ -69,6 +98,21 @@ export const PROJECTS_CONTENT = [
       'hiring workflows, and',
       'administrative operations.',
     ],
+    githubUrl: 'https://github.com/eshmeetbhachu/pool-managment-system',
+  },
+  {
+    key: 'kidney',
+    title: 'KIDNEY DISEASE CLASSIFIER',
+    border: '#2b6466',
+    lines: [
+      'A deep learning model that',
+      'classifies kidney CT scans as',
+      'normal, cyst, stone or tumor,',
+      'with Score-CAM heatmaps and',
+      'confidence scoring that make',
+      'its predictions explainable.',
+    ],
+    // Same repo as Swim-Safe for now, as requested.
     githubUrl: 'https://github.com/eshmeetbhachu/pool-managment-system',
   },
   {

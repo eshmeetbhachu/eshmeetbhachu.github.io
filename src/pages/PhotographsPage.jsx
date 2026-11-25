@@ -37,7 +37,7 @@ export default function PhotographsPage() {
 
   return (
     <div className="relative h-full p-5 pt-6">
-      <h2 className="notebook-heading text-right">PHOTOGRAPHS</h2>
+      <h2 className="notebook-heading">PHOTOGRAPHS</h2>
 
       <div className="photo-deck">
         {PHOTOS.map(({ key, title }, i) => {

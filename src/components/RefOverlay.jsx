@@ -7,7 +7,7 @@ export default function RefOverlay({ bookState, spread }) {
   const src =
     bookState === 'closed'
       ? '/design/01-home.png'
-      : spread === 1
+      : spread >= 1
         ? '/design/03-projects-photos.png'
         : '/design/02-about-stack.png';
   return <img className="ref-overlay" src={src} alt="" />;

@@ -14,6 +14,8 @@ import useBookState from './hooks/useBookState';
 import { IDENTITY } from './constants/content';
 import lineArt from './assets/optimized/lineArt.webp';
 
+const SPREAD_COUNT = 3;
+
 export default function App() {
   const {
     bookState,
@@ -23,11 +25,11 @@ export default function App() {
     finishClosing,
     closeRequested,
     spread,
-    isTurning,
+    turningLeaf,
     turnForward,
     turnBackward,
     finishTurning,
-  } = useBookState();
+  } = useBookState(SPREAD_COUNT);
   const [techOpen, setTechOpen] = useState(false);
   const closeTech = useCallback(() => setTechOpen(false), []);
 
@@ -42,8 +44,8 @@ export default function App() {
   // fade in until partway through that, so this is well ahead of when it's
   // actually revealed, not a visible pop-in.
   //
-  // spread1 (Projects + Photographs) mounts once the book is fully open and
-  // idle, i.e. while the user is still reading spread 0 — giving the much
+  // Later spreads (Projects, Photographs) mount once the book is fully open
+  // and idle, i.e. while the user is still reading spread 0 — giving the much
   // heavier photo/illustration assets a real head start before they could
   // plausibly click the forward corner, so that turn still feels instant.
   const [spread0Ready, setSpread0Ready] = useState(false);
@@ -86,13 +88,22 @@ export default function App() {
               <img className="cover-lineart" src={lineArt} alt="" aria-hidden="true" />
             </>
           }
-          leftPage={spread0Ready ? <AboutPage /> : null}
-          rightPage={spread0Ready ? <TechStackPage onOpenTechStack={() => setTechOpen(true)} /> : null}
-          nextLeftPage={spread1Ready ? <ProjectsPage /> : null}
-          nextRightPage={spread1Ready ? <PhotographsPage /> : null}
-          nextSpreadReady={spread1Ready}
+          spreads={[
+            {
+              left: spread0Ready ? <AboutPage /> : null,
+              right: spread0Ready ? <TechStackPage onOpenTechStack={() => setTechOpen(true)} /> : null,
+              ready: spread0Ready,
+            },
+            {
+              left: spread1Ready ? <ProjectsPage side="left" /> : null,
+              right: spread1Ready ? <ProjectsPage side="right" /> : null,
+              ready: spread1Ready,
+            },
+            // Right page intentionally blank for now.
+            { left: spread1Ready ? <PhotographsPage /> : null, right: null, ready: spread1Ready },
+          ]}
           spread={spread}
-          isTurning={isTurning}
+          turningLeaf={turningLeaf}
           onTurnForward={turnForward}
           onTurnBackward={turnBackward}
           onTurnEnd={finishTurning}

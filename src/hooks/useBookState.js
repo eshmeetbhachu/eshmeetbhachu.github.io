@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 import { CLOSE_FALLBACK_MS, OPEN_FALLBACK_MS, TURN_FALLBACK_MS } from '../constants/layout';
 
-// closed → opening → open → closing → closed. Once open, `spread` (0|1) +
-// `isTurning` drive the page-turn leaf.
-export default function useBookState() {
+// closed → opening → open → closing → closed. Once open, `spread`
+// (0..spreadCount-1) + `turningLeaf` drive the page-turn leaves. Leaf k is
+// the sheet turned when going from spread k-1 to spread k.
+export default function useBookState(spreadCount) {
   const [bookState, setBookState] = useState('closed');
   const [spread, setSpread] = useState(0);
-  const [isTurning, setIsTurning] = useState(false);
+  const [turningLeaf, setTurningLeaf] = useState(null);
   const [closeRequested, setCloseRequested] = useState(false);
+  const isTurning = turningLeaf !== null;
 
   const open = useCallback(() => setBookState((s) => (s === 'closed' ? 'opening' : s)), []);
   const finishOpening = useCallback(() => setBookState((s) => (s === 'opening' ? 'open' : s)), []);
@@ -25,21 +27,21 @@ export default function useBookState() {
     return () => clearTimeout(timer);
   }, [bookState, finishClosing]);
 
-  const turnTo = useCallback(
-    (target) => {
-      if (bookState !== 'open' || isTurning || closeRequested) return;
-      setSpread((s) => {
-        if (s === target) return s;
-        setIsTurning(true);
-        return target;
-      });
+  // One sheet at a time: forward turns leaf spread+1, backward turns leaf spread.
+  const step = useCallback(
+    (dir) => {
+      const target = spread + dir;
+      if (target < 0 || target >= spreadCount) return;
+      setTurningLeaf(dir > 0 ? target : spread);
+      setSpread(target);
     },
-    [bookState, isTurning, closeRequested],
+    [spread, spreadCount],
   );
 
-  const turnForward = useCallback(() => turnTo(1), [turnTo]);
-  const turnBackward = useCallback(() => turnTo(0), [turnTo]);
-  const finishTurning = useCallback(() => setIsTurning(false), []);
+  const canTurn = bookState === 'open' && !isTurning && !closeRequested;
+  const turnForward = useCallback(() => canTurn && step(1), [canTurn, step]);
+  const turnBackward = useCallback(() => canTurn && step(-1), [canTurn, step]);
+  const finishTurning = useCallback(() => setTurningLeaf(null), []);
 
   useEffect(() => {
     if (!isTurning) return;
@@ -47,23 +49,21 @@ export default function useBookState() {
     return () => clearTimeout(timer);
   }, [isTurning, finishTurning]);
 
-  // The opening animation always starts from spread 0, so closing from
-  // spread 1 first turns back (existing page-turn), then plays the reverse.
+  // The opening animation always starts from spread 0, so closing from a
+  // later spread first turns back one sheet at a time, then plays the reverse.
   const close = useCallback(() => {
-    if (bookState !== 'open' || isTurning || closeRequested) return;
-    setCloseRequested(true);
-    if (spread !== 0) {
-      setIsTurning(true);
-      setSpread(0);
-    }
-  }, [bookState, isTurning, closeRequested, spread]);
+    if (canTurn) setCloseRequested(true);
+  }, [canTurn]);
 
   useEffect(() => {
-    if (closeRequested && !isTurning && spread === 0 && bookState === 'open') {
+    if (!closeRequested || isTurning || bookState !== 'open') return;
+    if (spread > 0) {
+      step(-1);
+    } else {
       setCloseRequested(false);
       setBookState('closing');
     }
-  }, [closeRequested, isTurning, spread, bookState]);
+  }, [closeRequested, isTurning, spread, bookState, step]);
 
   return {
     bookState,
@@ -74,6 +74,7 @@ export default function useBookState() {
     closeRequested,
     spread,
     isTurning,
+    turningLeaf,
     turnForward,
     turnBackward,
     finishTurning,
