@@ -22,7 +22,7 @@ export const SOCIAL_LINKS = [
 ];
 
 // Barcode links to the resume PDF.
-export const RESUME_URL = 'https://drive.google.com/file/d/1mE8VSsOdTuZcdSV4IL1TSTA76jbd8k7H/view?usp=drive_link';
+export const RESUME_URL = 'https://drive.google.com/file/d/1c61PvgzNviYV1-TAXZYZpnw4DaPoIneG/view?usp=drive_link';
 
 export const EXPERIENCE_CONTENT = {
   company: 'ANTIER SOLUTIONS',
